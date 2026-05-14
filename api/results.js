@@ -46,9 +46,14 @@ const VENUES = [
   {id:'h3_i',name:'高3 Iクラス',grade:'高校3年'},
 ];
 
+function getKVConfig() {
+  const url   = process.env.KV_REST_API_URL   || process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  return { url, token };
+}
+
 async function kvHgetall(key) {
-  const url   = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
+  const { url, token } = getKVConfig();
   if (!url || !token) return null;
   const res = await fetch(`${url}/hgetall/${encodeURIComponent(key)}`, {
     headers: { Authorization: `Bearer ${token}` },
