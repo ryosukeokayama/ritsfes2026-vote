@@ -7,9 +7,15 @@ const VALID_IDS = [
   'h3_a','h3_b','h3_c','h3_d','h3_e','h3_f','h3_g','h3_h','h3_i',
 ];
 
+function getKVConfig() {
+  // Upstashが設定する環境変数名に対応（複数パターン試みる）
+  const url   = process.env.KV_REST_API_URL   || process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  return { url, token };
+}
+
 async function kvHincrby(key, field, value) {
-  const url   = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
+  const { url, token } = getKVConfig();
   if (!url || !token) return;
   await fetch(`${url}/hincrby/${encodeURIComponent(key)}/${encodeURIComponent(field)}/${value}`, {
     method: 'POST',
