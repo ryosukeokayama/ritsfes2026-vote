@@ -7,6 +7,12 @@ const VENUE_IDS = [
   'h3_a','h3_b','h3_c','h3_d','h3_e','h3_f','h3_g','h3_h','h3_i',
 ];
 
+function getKVConfig() {
+  const url   = process.env.KV_REST_API_URL   || process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  return { url, token };
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -18,8 +24,7 @@ module.exports = async function handler(req, res) {
   if (confirm !== 'RESET_ALL')
     return res.status(400).json({ error: '確認コードが違います' });
 
-  const url   = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
+  const { url, token } = getKVConfig();
   if (!url || !token) return res.status(200).json({ ok: true });
 
   try {
