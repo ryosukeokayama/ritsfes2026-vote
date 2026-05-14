@@ -1,0 +1,10 @@
+{
+  "routes": [
+    { "src": "/api/vote",    "dest": "/api/vote.js"    },
+    { "src": "/api/results", "dest": "/api/results.js" },
+    { "src": "/api/admin",   "dest": "/api/admin.js"   },
+    { "src": "/vote",        "dest": "/vote.html"    },
+    { "src": "/results",     "dest": "/results.html" },
+    { "src": "/",            "dest": "/vote.html"    }
+  ]
+}
