@@ -91,11 +91,12 @@ html,body{
 }
 #topbar.visible{display:flex}
 #venue-label{font-size:13px;font-weight:700;color:#555}
-#change-btn{
-  font-size:11px;font-weight:700;color:var(--light);
-  background:transparent;border:1.5px solid #ddd;
-  border-radius:999px;padding:5px 12px;
-  font-family:inherit;cursor:pointer;
+/* 右下隠しエリア */
+#secret-area{
+  position:fixed;bottom:0;right:0;
+  width:80px;height:80px;
+  z-index:200;
+  -webkit-tap-highlight-color:transparent;
 }
 
 /* ===== 円ボタン ===== */
@@ -196,7 +197,6 @@ html,body{
 <!-- ===== トップバー ===== -->
 <div id="topbar">
   <span id="venue-label">📍 会場名</span>
-  <button id="change-btn" onclick="changeVenue()">会場を変更</button>
 </div>
 
 <!-- ===== ステータス選択 ===== -->
@@ -208,7 +208,8 @@ html,body{
   </div>
 </div>
 
-<!-- ===== 点数選択 ===== -->
+<!-- 右下隠しエリア（5回タップで会場変更） -->
+<div id="secret-area" ontouchstart="secretTap()" onclick="secretTap()"></div>
 <div class="screen" id="screen-vote">
   <p class="title">直前の発表を5段階で評価してください</p>
   <p class="sub">※数字が大きいほど高評価</p>
@@ -334,6 +335,20 @@ function launchApp(){
   document.getElementById('topbar').classList.add('visible');
   document.getElementById('venue-label').textContent = '📍 ' + currentVenueName;
   showScreen('status');
+}
+
+// ===== 隠しコマンド：右下5回タップで会場変更 =====
+let secretTapCount = 0;
+let secretTapTimer = null;
+
+function secretTap(){
+  secretTapCount++;
+  clearTimeout(secretTapTimer);
+  secretTapTimer = setTimeout(()=>{ secretTapCount = 0; }, 2000);
+  if(secretTapCount >= 5){
+    secretTapCount = 0;
+    changeVenue();
+  }
 }
 
 function changeVenue(){
