@@ -44,6 +44,7 @@ const VENUES = [
   {id:'h3_g',name:'高3 Gクラス',grade:'高校3年'},
   {id:'h3_h',name:'高3 Hクラス',grade:'高校3年'},
   {id:'h3_i',name:'高3 Iクラス',grade:'高校3年'},
+  {id:'test_1',name:'テスト会場',grade:'テスト'},
 ];
 
 function getKVConfig() {
