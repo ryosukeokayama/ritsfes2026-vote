@@ -17,7 +17,6 @@
 })();
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js" defer></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -142,10 +141,6 @@ html,body{
     <button class="gf-btn" data-grade="高校3年" onclick="filterGrade(this)">高校3年</button>
   </div>
   <div class="venue-grid" id="venue-grid"></div>
-  <div id="device-id-footer" style="margin-top:18px;text-align:center;opacity:.55">
-    <div id="device-qr" style="display:flex;justify-content:center;margin-bottom:4px"></div>
-    <div style="font-size:9px;color:#999;font-family:monospace" id="device-id-text"></div>
-  </div>
   <div style="height:20px"></div>
 </div>
 
@@ -175,11 +170,11 @@ html,body{
   <p class="title">直前の発表を5段階で評価してください</p>
   <p class="sub">※数字が大きいほど高評価</p>
   <div class="score-circles" id="score-circles">
-    <button class="circle-btn" style="background:#F06B55" onclick="submitVote(1,event)">1</button>
-    <button class="circle-btn" style="background:#F09244" onclick="submitVote(2,event)">2</button>
-    <button class="circle-btn" style="background:#F5C542" onclick="submitVote(3,event)">3</button>
-    <button class="circle-btn" style="background:#7DC96E" onclick="submitVote(4,event)">4</button>
-    <button class="circle-btn" style="background:#5BBDD4" onclick="submitVote(5,event)">5</button>
+    <button class="circle-btn" style="background:#F06B55" onclick="submitVote(1)">1</button>
+    <button class="circle-btn" style="background:#F09244" onclick="submitVote(2)">2</button>
+    <button class="circle-btn" style="background:#F5C542" onclick="submitVote(3)">3</button>
+    <button class="circle-btn" style="background:#7DC96E" onclick="submitVote(4)">4</button>
+    <button class="circle-btn" style="background:#5BBDD4" onclick="submitVote(5)">5</button>
   </div>
   <button class="back-btn" onclick="showScreen('status')">←戻る</button>
 </div>
@@ -243,29 +238,7 @@ const VENUES = [
   {id:'h3_g',name:'高3 Gクラス',short:'3-G',grade:'高校3年'},
   {id:'h3_h',name:'高3 Hクラス',short:'3-H',grade:'高校3年'},
   {id:'h3_i',name:'高3 Iクラス',short:'3-I',grade:'高校3年'},
-  {id:'test_1',name:'テスト会場',short:'テスト',grade:'テスト'},
 ];
-
-function getDeviceUid(){
-  let uid = localStorage.getItem('rits_device_uid');
-  if(!uid){
-    uid = crypto.randomUUID();
-    localStorage.setItem('rits_device_uid', uid);
-  }
-  return uid;
-}
-
-// 端末IDの表示とQRコード生成。QRコードに渡すのは自己生成UUIDのみで外部入力を含まないためinnerHTML使用は許容
-function renderDeviceIdFooter(){
-  try {
-    var uid = getDeviceUid();
-    document.getElementById('device-id-text').textContent = '端末ID: ' + uid;
-    var qr = qrcode(0, 'L');
-    qr.addData(uid);
-    qr.make();
-    document.getElementById('device-qr').innerHTML = qr.createSvgTag({cellSize:3, margin:2});
-  } catch(e) { /* localStorage/crypto/QRライブラリ非対応環境でも画面表示自体は継続させる */ }
-}
 
 let currentVenueId = '';
 let currentVenueName = '';
@@ -288,8 +261,6 @@ function secretTap(){
 // 初期化
 (function init(){
   renderVenueGrid('all');
-  // qrcode-generatorはdeferで読み込まれるためwindow.loadを待ってから描画
-  window.addEventListener('load', renderDeviceIdFooter);
   const savedId   = localStorage.getItem('venue_id');
   const savedName = localStorage.getItem('venue_name');
   if(savedId && savedName){
@@ -386,24 +357,15 @@ function selectVoter(type){
   showScreen('vote');
 }
 
-function submitVote(score, evt){
+function submitVote(score){
   if(isSubmitting || !isOpen) return;
   isSubmitting = true;
   document.querySelectorAll('#score-circles .circle-btn').forEach(b=>b.disabled=true);
 
-  const tapX = evt && typeof evt.clientX === 'number' ? evt.clientX : null;
-  const tapY = evt && typeof evt.clientY === 'number' ? evt.clientY : null;
-  let deviceUid = null;
-  try { deviceUid = getDeviceUid(); } catch(e) { /* localStorage/crypto非対応環境でも投票自体は継続させる */ }
-
   fetch('/api/vote',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      venueId:currentVenueId, score, voterType:currentVoterType,
-      tapX, tapY, viewportW:window.innerWidth, viewportH:window.innerHeight,
-      userAgent:navigator.userAgent, deviceUid
-    })
+    body:JSON.stringify({venueId:currentVenueId, score, voterType:currentVoterType})
   }).catch(()=>{});
 
   showScreen('thanks');
